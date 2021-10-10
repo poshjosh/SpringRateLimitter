@@ -1,4 +1,4 @@
-package org.abondar.spring.ratelimitter;
+package com.looseboxes.spring.ratelimiter.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -11,8 +11,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD,ElementType.TYPE})
 public @interface RateLimit {
 
-    int requests() default 1000;
+    int limit() default Integer.MAX_VALUE;
 
-    long period() default 1;
-
+    long period() default 0;
 }

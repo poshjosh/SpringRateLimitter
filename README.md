@@ -5,33 +5,25 @@ Small rate limitting library for rest controllers.
 Idea: you can block your endpoints after some requests for specified period of time
 
 # Usage
-1. Add a depdendency to your maven project
+1. Import RateConfig to your config or SpringBootApplication
 
-```yaml
-         <dependency>
-            <groupId>io.github.abondar24</groupId>
-            <artifactId>SpringRateLimitter</artifactId>
-            <version>0.0.2-SNAPSHOT</version>
-         </dependency>
-
-```
-2. Import RateConfig to your config or SpringBootApplication
-
-```yaml
+```java
 @Import({RateConfig.class})
 ``` 
 
-3. Add property controller.package to your applicaiton.yml or application.properties
+2. Add property controller.package to your applicaiton.yml or application.properties
 ```yaml
 controller:
   package: package-name
 ```
 
-4. Add an exception handler for RateLimitException. 
+3. Add an exception handler for RateLimitException. 
 
-5. Annotate controller or separate methods. 
+4. Annotate controller or separate methods. 
+
 Number of requests and period im milliseconds can be specified. 
-Defalut values are 1000 requests and 1ms
+
+Default values are 1000 requests and 1ms
 
 # Build
 ```yaml

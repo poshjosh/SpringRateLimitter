@@ -1,1 +1,1 @@
-org.abondar.spring.ratelimitter.RateProcessor
+com.looseboxes.spring.ratelimiter.annotation.RateLimitProcessor
