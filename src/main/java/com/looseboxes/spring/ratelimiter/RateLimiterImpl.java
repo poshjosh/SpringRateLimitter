@@ -62,7 +62,7 @@ public class RateLimiterImpl<K> implements RateLimiter<K> {
             }
         }
 
-        log.debug("\nFor: {}, rate: {} exceeds limit: {}", key, next, firstExceededLimit);
+        log.debug("\nFor: {}, rate: {} exceeds: {}, limit: {}", key, next, firstExceededLimit != null, firstExceededLimit);
 
         if(next == null) {
             cache.remove(key);

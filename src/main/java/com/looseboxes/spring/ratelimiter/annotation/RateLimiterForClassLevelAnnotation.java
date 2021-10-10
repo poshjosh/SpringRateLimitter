@@ -6,6 +6,8 @@ import com.looseboxes.spring.ratelimiter.RateLimiter;
 import com.looseboxes.spring.ratelimiter.RateLimiterSingleton;
 import com.looseboxes.spring.ratelimiter.rates.CountWithinDuration;
 import com.looseboxes.spring.ratelimiter.rates.Rate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,6 +15,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
 public class RateLimiterForClassLevelAnnotation implements RateLimiter<String> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RateLimiterForClassLevelAnnotation.class);
 
     private final ConcurrentMap<String, RateLimiter<String>> rateLimiters = new ConcurrentHashMap<>();
 
@@ -56,9 +60,12 @@ public class RateLimiterForClassLevelAnnotation implements RateLimiter<String> {
 
     @Override
     public Rate record(String requestURI) throws RateLimitExceededException {
+        LOG.trace("Rate limiting: {}", requestURI);
         final String requestPath = getClassRequestPath(requestURI);
         final RateLimiter<String> rateLimiter = requestPath == null ? null : rateLimiters.get(requestPath);
-        return rateLimiter == null ? null : rateLimiter.record(requestPath);
+        final Rate result = rateLimiter == null ? null : rateLimiter.record(requestPath);
+        LOG.trace("Result: {}, for rate limiting: {}", result, requestURI);
+        return result;
     }
 
     private String getClassRequestPath(String requestUri) {

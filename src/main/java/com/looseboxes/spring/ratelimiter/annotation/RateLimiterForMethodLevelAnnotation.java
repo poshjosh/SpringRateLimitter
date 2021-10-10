@@ -6,6 +6,8 @@ import com.looseboxes.spring.ratelimiter.RateLimiter;
 import com.looseboxes.spring.ratelimiter.RateLimiterSingleton;
 import com.looseboxes.spring.ratelimiter.rates.CountWithinDuration;
 import com.looseboxes.spring.ratelimiter.rates.Rate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,6 +23,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
 public class RateLimiterForMethodLevelAnnotation implements RateLimiter<String> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RateLimiterForMethodLevelAnnotation.class);
 
     private final ConcurrentMap<String, RateLimiter<String>> methodLimiters = new ConcurrentHashMap<>();
 
@@ -103,7 +107,10 @@ public class RateLimiterForMethodLevelAnnotation implements RateLimiter<String> 
     }
 
     public Rate record(String requestURI) throws RateLimitExceededException {
+        LOG.trace("Rate limiting: {}", requestURI);
         final RateLimiter<String> rateLimiter = methodLimiters.get(requestURI);
-        return rateLimiter == null ? null : rateLimiter.record(requestURI);
+        final Rate result = rateLimiter == null ? null : rateLimiter.record(requestURI);
+        LOG.trace("Result: {}, for rate limiting: {}", result, requestURI);
+        return result;
     }
 }

@@ -1,9 +1,14 @@
 package com.looseboxes.spring.ratelimiter;
 
 import com.looseboxes.spring.ratelimiter.rates.Rate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.function.Supplier;
 
 public class RateLimiterSingleton<K> implements RateLimiter<K> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RateLimiterSingleton.class);
 
     private final Supplier<Rate> rateSupplier;
     private final RateExceededHandler<K> rateExceededHandler;
@@ -23,6 +28,7 @@ public class RateLimiterSingleton<K> implements RateLimiter<K> {
 
     @Override
     public Rate record(K key) throws RateLimitExceededException {
+
         if(this.key.equals(key)) {
             rate = rate == null ? rateSupplier.get() : rate.increment();
             final int n = rate.compareTo(limit);
@@ -31,6 +37,9 @@ public class RateLimiterSingleton<K> implements RateLimiter<K> {
             }else if(n == 0) {
                 rate = rateSupplier.get();
             }
+
+            LOG.debug("\nFor: {}, rate: {} exceeds: {}, limit: {}", key, rate, n < 0, limit);
+
             return rate;
         }else{
             throw new IllegalArgumentException(String.format("Expected: %s, found: %s", this.key, key));
