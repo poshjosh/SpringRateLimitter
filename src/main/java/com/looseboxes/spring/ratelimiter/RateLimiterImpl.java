@@ -41,13 +41,13 @@ public class RateLimiterImpl<K> implements RateLimiter<K> {
 
         Rate firstExceededLimit = null;
 
-        Rate next = cache.get(key);
-        if(next == null) {
-            next = Objects.requireNonNull(rateSupplier.get());
-        }else if(!limits.isEmpty()) {
+        Rate rate = cache.get(key);
+        rate = rate == null ? Objects.requireNonNull(rateSupplier.get()) : rate.increment();
+
+        if(!limits.isEmpty()) {
             int resetCount = 0;
             for(Rate limit : limits) {
-                final int n = next.compareTo(limit);
+                final int n = rate.compareTo(limit);
                 if(n == 0) {
                     ++resetCount;
                 }else if(n < 0) {
@@ -57,24 +57,24 @@ public class RateLimiterImpl<K> implements RateLimiter<K> {
                 }
             }
             if(resetCount == limits.size()) {
-                next = Objects.requireNonNull(rateSupplier.get());
-//            next = null; // To limit the size of the Map, we remove rather than reset
+                rate = Objects.requireNonNull(rateSupplier.get());
+//            rate = null; // To limit the size of the Map, we may remove rather than reset
             }
         }
 
-        log.debug("\nFor: {}, rate: {} exceeds: {}, limit: {}", key, next, firstExceededLimit != null, firstExceededLimit);
+        log.debug("\nFor: {}, rate: {} exceeds: {}, limit: {}", key, rate, firstExceededLimit != null, firstExceededLimit);
 
-        if(next == null) {
+        if(rate == null) {
             cache.remove(key);
-            next = rateSupplier.get();
+            rate = Objects.requireNonNull(rateSupplier.get());
         }else{
-            cache.put(key, next);
+            cache.put(key, rate);
         }
 
         if(firstExceededLimit != null) {
-            rateExceededHandler.onRateExceeded(key, next, firstExceededLimit);
+            rateExceededHandler.onRateExceeded(key, rate, firstExceededLimit);
         }
 
-        return next;
+        return rate;
     }
 }

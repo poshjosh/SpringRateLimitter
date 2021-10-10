@@ -4,6 +4,7 @@ import com.looseboxes.spring.ratelimiter.rates.Rate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class RateLimiterSingleton<K> implements RateLimiter<K> {
@@ -30,7 +31,7 @@ public class RateLimiterSingleton<K> implements RateLimiter<K> {
     public Rate record(K key) throws RateLimitExceededException {
 
         if(this.key.equals(key)) {
-            rate = rate == null ? rateSupplier.get() : rate.increment();
+            rate = rate == null ? Objects.requireNonNull(rateSupplier.get()) : rate.increment();
             final int n = rate.compareTo(limit);
             if(n < 0) {
                 rateExceededHandler.onRateExceeded(key, rate, limit);
