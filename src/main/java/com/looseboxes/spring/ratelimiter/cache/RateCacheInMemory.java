@@ -3,14 +3,21 @@ package com.looseboxes.spring.ratelimiter.cache;
 import com.looseboxes.spring.ratelimiter.rates.Rate;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
 public class RateCacheInMemory<K> implements RateCache<K>{
 
-    private final Map<K, Rate> delegate = new ConcurrentHashMap<>();
+    private final Map<K, Rate> delegate;
 
-    public RateCacheInMemory() { }
+    public RateCacheInMemory() {
+        this(new ConcurrentHashMap<>());
+    }
+
+    public RateCacheInMemory(Map<K, Rate> delegate) {
+        this.delegate = Objects.requireNonNull(delegate);
+    }
 
     @Override
     public void forEach(BiConsumer<K, Rate> consumer) {

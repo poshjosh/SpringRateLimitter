@@ -63,7 +63,7 @@ public class RateLimiterForClassLevelAnnotation implements RateLimiter<String> {
         LOG.trace("Rate limiting: {}", requestURI);
         final String requestPath = getClassRequestPath(requestURI);
         final RateLimiter<String> rateLimiter = requestPath == null ? null : rateLimiters.get(requestPath);
-        final Rate result = rateLimiter == null ? null : rateLimiter.record(requestPath);
+        final Rate result = rateLimiter == null ? Rate.NONE : rateLimiter.record(requestPath);
         LOG.trace("Result: {}, for rate limiting: {}", result, requestURI);
         return result;
     }

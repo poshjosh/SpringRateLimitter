@@ -2,6 +2,17 @@ package com.looseboxes.spring.ratelimiter.rates;
 
 public interface Rate extends Comparable<Rate> {
 
+    Rate NONE = new Rate() {
+        @Override
+        public Rate increment() {
+            return this;
+        }
+        @Override
+        public int compareTo(Rate other) {
+            return 0;
+        }
+    };
+
     Rate increment();
 
     /**

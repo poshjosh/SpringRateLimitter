@@ -6,6 +6,8 @@ import java.io.Serializable;
 
 public final class CountWithinDuration implements Rate, Serializable {
 
+    public static final CountWithinDuration NONE = new CountWithinDuration(0, 0);
+
     private final int count;
     private final long duration;
     private final long timeCreated;

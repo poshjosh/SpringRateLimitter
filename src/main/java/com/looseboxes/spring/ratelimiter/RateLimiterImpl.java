@@ -58,15 +58,14 @@ public class RateLimiterImpl<K> implements RateLimiter<K> {
             }
             if(resetCount == limits.size()) {
                 rate = Objects.requireNonNull(rateSupplier.get());
-//            rate = null; // To limit the size of the Map, we may remove rather than reset
+//                rate = Rate.NONE; // To limit the size of the Map, we may remove rather than reset
             }
         }
 
         log.debug("\nFor: {}, rate: {} exceeds: {}, limit: {}", key, rate, firstExceededLimit != null, firstExceededLimit);
 
-        if(rate == null) {
+        if(rate == Rate.NONE) {
             cache.remove(key);
-            rate = Objects.requireNonNull(rateSupplier.get());
         }else{
             cache.put(key, rate);
         }

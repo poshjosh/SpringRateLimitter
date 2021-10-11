@@ -109,7 +109,7 @@ public class RateLimiterForMethodLevelAnnotation implements RateLimiter<String> 
     public Rate record(String requestURI) throws RateLimitExceededException {
         LOG.trace("Rate limiting: {}", requestURI);
         final RateLimiter<String> rateLimiter = methodLimiters.get(requestURI);
-        final Rate result = rateLimiter == null ? null : rateLimiter.record(requestURI);
+        final Rate result = rateLimiter == null ? Rate.NONE : rateLimiter.record(requestURI);
         LOG.trace("Result: {}, for rate limiting: {}", result, requestURI);
         return result;
     }
