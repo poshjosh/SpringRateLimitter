@@ -1,38 +1,37 @@
 package com.looseboxes.spring.ratelimiter;
 
 import com.looseboxes.spring.ratelimiter.cache.RateCache;
+import com.looseboxes.spring.ratelimiter.cache.RateCacheInMemory;
 import com.looseboxes.spring.ratelimiter.rates.Rate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Supplier;
+import java.util.*;
 
 public class RateLimiterImpl<K> implements RateLimiter<K> {
 
-    private final Logger log = LoggerFactory.getLogger(RateLimiterImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RateLimiterImpl.class);
 
     private final RateCache<K> cache;
 
-    private final Supplier<Rate> rateSupplier;
+    private final RateSupplier rateSupplier;
 
     private final List<Rate> limits;
 
     private final RateExceededHandler<K> rateExceededHandler;
 
-    public RateLimiterImpl(RateCache<K> cache, Supplier<Rate> rateSupplier, List<Rate> limits) {
-        this(cache, rateSupplier, limits, new RateExceededExceptionThrower<>());
+    public RateLimiterImpl(RateSupplier rateSupplier, Collection<Rate> limits) {
+        this(new RateCacheInMemory<>(), rateSupplier, limits, new RateExceededExceptionThrower<>());
     }
 
     public RateLimiterImpl(
             RateCache<K> cache,
-            Supplier<Rate> rateSupplier,
-            List<Rate> limits,
+            RateSupplier rateSupplier,
+            Collection<Rate> limits,
             RateExceededHandler<K> rateExceededHandler) {
         this.cache = Objects.requireNonNull(cache);
         this.rateSupplier = Objects.requireNonNull(rateSupplier);
-        this.limits = Objects.requireNonNull(limits);
+        this.limits = Collections.unmodifiableList(new ArrayList<>(limits));
         this.rateExceededHandler = Objects.requireNonNull(rateExceededHandler);
     }
 
@@ -42,7 +41,7 @@ public class RateLimiterImpl<K> implements RateLimiter<K> {
         Rate firstExceededLimit = null;
 
         Rate rate = cache.get(key);
-        rate = rate == null ? Objects.requireNonNull(rateSupplier.get()) : rate.increment();
+        rate = rate == null ? Objects.requireNonNull(rateSupplier.getInitialRate()) : rate.increment();
 
         if(!limits.isEmpty()) {
             int resetCount = 0;
@@ -53,16 +52,18 @@ public class RateLimiterImpl<K> implements RateLimiter<K> {
                 }else if(n < 0) {
                     if(firstExceededLimit == null) {
                         firstExceededLimit = limit;
+                        break;
                     }
                 }
             }
             if(resetCount == limits.size()) {
-                rate = Objects.requireNonNull(rateSupplier.get());
-//                rate = Rate.NONE; // To limit the size of the Map, we may remove rather than reset
+                rate = Objects.requireNonNull(rateSupplier.getResetRate());
             }
         }
 
-        log.debug("\nFor: {}, rate: {} exceeds: {}, limit: {}", key, rate, firstExceededLimit != null, firstExceededLimit);
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("\nFor: {}, rate: {} exceeds: {}, limit: {}", key, rate, firstExceededLimit != null, firstExceededLimit);
+        }
 
         if(rate == Rate.NONE) {
             cache.remove(key);

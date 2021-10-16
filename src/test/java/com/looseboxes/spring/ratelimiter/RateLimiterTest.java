@@ -1,14 +1,12 @@
 package com.looseboxes.spring.ratelimiter;
 
-import com.looseboxes.spring.ratelimiter.cache.RateCacheInMemory;
-import com.looseboxes.spring.ratelimiter.rates.CountWithinDuration;
+import com.looseboxes.spring.ratelimiter.rates.LimitWithinDuration;
 import com.looseboxes.spring.ratelimiter.rates.Rate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -53,7 +51,7 @@ class RateLimiterTest {
     }
 
     public RateLimiter getRateLimiter(List<Rate> limits) {
-        return new RateLimiterImpl(new RateCacheInMemory(), getBaseRateSupplier(), limits);
+        return new RateLimiterImpl(getBaseRateSupplier(), limits);
     }
 
     private List<Rate> getDefaultLimits() { return Arrays.asList(getDefaultLimit()); }
@@ -63,18 +61,18 @@ class RateLimiterTest {
     }
 
     private Rate getDefaultLimit() {
-        return new CountWithinDuration(1, 3000);
+        return new LimitWithinDuration(1, 3000);
     }
 
     private List<Rate> getLimitsThatWillLeadToReset() {
         return Arrays.asList(getBaseRate(), getBaseRate());
     }
 
-    private Supplier<Rate> getBaseRateSupplier() {
+    private RateSupplier getBaseRateSupplier() {
         return () -> getBaseRate();
     }
 
-    private final CountWithinDuration baseRate = new CountWithinDuration();
+    private final LimitWithinDuration baseRate = new LimitWithinDuration();
 
     private Rate getBaseRate() {
         return baseRate;

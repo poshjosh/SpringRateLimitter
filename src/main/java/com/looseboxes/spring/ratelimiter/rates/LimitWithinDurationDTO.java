@@ -3,21 +3,21 @@ package com.looseboxes.spring.ratelimiter.rates;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class CountWithinDurationDTO<ID> implements Serializable {
+public class LimitWithinDurationDTO<ID> implements Serializable {
 
     private ID id;
 
-    private int count;
+    private int limit;
     private long duration;
     private long timeCreated;
 
-    public CountWithinDurationDTO() {
-        this(null, new CountWithinDuration());
+    public LimitWithinDurationDTO() {
+        this(null, new LimitWithinDuration());
     }
 
-    public CountWithinDurationDTO(ID id, CountWithinDuration delegate) {
+    public LimitWithinDurationDTO(ID id, LimitWithinDuration delegate) {
         this.id = id;
-        this.count = delegate.getCount();
+        this.limit = delegate.getLimit();
         this.duration = delegate.getDuration();
         this.timeCreated = delegate.getTimeCreated();
     }
@@ -30,12 +30,12 @@ public class CountWithinDurationDTO<ID> implements Serializable {
         this.id = id;
     }
 
-    public int getCount() {
-        return count;
+    public int getLimit() {
+        return limit;
     }
 
-    public void setCount(int count) {
-        this.count = count;
+    public void setLimit(int limit) {
+        this.limit = limit;
     }
 
     public long getDuration() {
@@ -58,7 +58,7 @@ public class CountWithinDurationDTO<ID> implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        CountWithinDurationDTO that = (CountWithinDurationDTO) o;
+        LimitWithinDurationDTO that = (LimitWithinDurationDTO) o;
         return Objects.equals(id, that.id);
     }
 
@@ -69,9 +69,9 @@ public class CountWithinDurationDTO<ID> implements Serializable {
 
     @Override
     public String toString() {
-        return "CountWithinDurationDTO{" +
+        return "LimitWithinDurationDTO{" +
                 "id='" + id + '\'' +
-                ", count=" + getCount() +
+                ", limit=" + getLimit() +
                 ", duration=" + getDuration() +
                 ", timeCreated=" + getTimeCreated() +
                 '}';

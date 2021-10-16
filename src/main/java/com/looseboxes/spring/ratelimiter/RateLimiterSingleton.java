@@ -5,19 +5,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
-import java.util.function.Supplier;
 
 public class RateLimiterSingleton<K> implements RateLimiter<K> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RateLimiterSingleton.class);
 
-    private final Supplier<Rate> rateSupplier;
+    private final RateSupplier rateSupplier;
     private final RateExceededHandler<K> rateExceededHandler;
     private final K key;
     private final Rate limit;
     private Rate rate;
 
-    public RateLimiterSingleton(Supplier<Rate> rateSupplier,
+    public RateLimiterSingleton(RateSupplier rateSupplier,
                                 RateExceededHandler<K> rateExceededHandler,
                                 K key,
                                 Rate limit) {
@@ -31,15 +30,17 @@ public class RateLimiterSingleton<K> implements RateLimiter<K> {
     public Rate record(K key) throws RateLimitExceededException {
 
         if(this.key.equals(key)) {
-            rate = rate == null ? Objects.requireNonNull(rateSupplier.get()) : rate.increment();
+            rate = rate == null ? Objects.requireNonNull(rateSupplier.getInitialRate()) : rate.increment();
             final int n = rate.compareTo(limit);
             if(n < 0) {
                 rateExceededHandler.onRateExceeded(key, rate, limit);
             }else if(n == 0) {
-                rate = rateSupplier.get();
+                rate = Objects.requireNonNull(rateSupplier.getResetRate());
             }
 
-            LOG.debug("\nFor: {}, rate: {} exceeds: {}, limit: {}", key, rate, n < 0, limit);
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("\nFor: {}, rate: {} exceeds: {}, limit: {}", key, rate, n < 0, limit);
+            }
 
             return rate;
         }else{

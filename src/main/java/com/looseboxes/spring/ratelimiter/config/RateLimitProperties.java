@@ -3,10 +3,7 @@ package com.looseboxes.spring.ratelimiter.config;
 import com.looseboxes.spring.ratelimiter.rates.Rate;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @ConfigurationProperties(prefix = "rate-limiter", ignoreUnknownFields = false)
 public class RateLimitProperties {
@@ -17,20 +14,20 @@ public class RateLimitProperties {
 
     private Map<String, RateLimitConfig> rateLimits;
 
-    public List<Rate> toRateList() {
-        final List<Rate> rateList;
+    public Map<String, Rate> toRates() {
+        final Map<String, Rate> rateMap;
         if(Boolean.TRUE.equals(disabled)) {
-            rateList = Collections.emptyList();
+            rateMap = Collections.emptyMap();
         }else if(rateLimits == null || rateLimits.isEmpty()) {
-                rateList = Collections.emptyList();
+            rateMap = Collections.emptyMap();
         }else {
-            List<Rate> temp = new ArrayList<>(rateLimits.size());
+            Map<String, Rate> temp = new HashMap<>(rateLimits.size());
             rateLimits.forEach((name, rateLimitConfig) -> {
-                temp.add(rateLimitConfig.toRate());
+                temp.put(name, rateLimitConfig.toRate());
             });
-            rateList = Collections.unmodifiableList(temp);
+            rateMap = Collections.unmodifiableMap(temp);
         }
-        return rateList;
+        return rateMap;
     }
 
     public String getControllerPackage() {

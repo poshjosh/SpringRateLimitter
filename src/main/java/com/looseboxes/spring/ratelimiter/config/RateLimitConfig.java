@@ -1,18 +1,18 @@
 package com.looseboxes.spring.ratelimiter.config;
 
-import com.looseboxes.spring.ratelimiter.rates.CountWithinDuration;
+import com.looseboxes.spring.ratelimiter.rates.LimitWithinDuration;
 import com.looseboxes.spring.ratelimiter.rates.Rate;
 
 import java.util.concurrent.TimeUnit;
 
 public class RateLimitConfig {
 
-    private int count;
+    private int limit;
     private long duration;
     private TimeUnit timeUnit;
 
     public Rate toRate() {
-        return new CountWithinDuration(count, timeUnit.toMillis(duration));
+        return new LimitWithinDuration(limit, timeUnit.toMillis(duration));
     }
 
     public long getDuration() {
@@ -23,12 +23,12 @@ public class RateLimitConfig {
         this.duration = duration;
     }
 
-    public int getCount() {
-        return count;
+    public int getLimit() {
+        return limit;
     }
 
-    public void setCount(int count) {
-        this.count = count;
+    public void setLimit(int limit) {
+        this.limit = limit;
     }
 
     public TimeUnit getTimeUnit() {
@@ -43,7 +43,7 @@ public class RateLimitConfig {
     public String toString() {
         return "RateLimitConfig{" +
                 "duration=" + duration +
-                ", count=" + count +
+                ", limit=" + limit +
                 ", timeUnit=" + timeUnit +
                 '}';
     }

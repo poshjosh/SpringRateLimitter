@@ -76,33 +76,28 @@ public class MyResource {
 
 # Manual usage
 
-You can define a RateLimiter manually as shown:
+You can use a `RateLimiter` manually as shown:
 
 ```java
+import javax.servlet.http.HttpServletRequest;
+import com.looseboxes.spring.ratelimiter.RateLimiter;
 import com.looseboxes.spring.ratelimiter.RateLimiterImpl;
-import com.looseboxes.spring.ratelimiter.cache.RateCacheInMemory;
+import com.looseboxes.spring.ratelimiter.RateLimitExceededException;
 import com.looseboxes.spring.ratelimiter.config.RateLimitProperties;
-import com.looseboxes.spring.ratelimiter.rates.CountWithinDuration;
-import org.springframework.stereotype.Component;
+import com.looseboxes.spring.ratelimiter.rates.LimitWithinDuration;
 
-@Component
-public class DefaultRateManager extends RateLimiterImpl {
+public class RateLimitSomething {
 
+    private final RateLimiter rateLimiter;
+    
     public DefaultRateManager(RateLimitProperties properties) {
-        super(
-                new RateCacheInMemory(),
-                () -> new CountWithinDuration(),
-                properties.toRateList()
+        rateLimiter = new RateLimiterImpl<>(() -> new LimitWithinDuration(), properties.toRateList());
+    }
+    
+    public void rateLimit(HttpServletRequest request) throws RateLimitExceededException {
+        rateLimiter.record(request.getRequestURI());
     }
 }
-```
-
-Then you can call the RateLimiter manually.
-
-```java
-// This will throw RateLimitExceededException if any of the rates defined in
-// the properties file is exceeded
-rateLimiter.record(request.getRequestURI()); 
 ```
 
 # Build

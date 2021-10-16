@@ -4,20 +4,20 @@ import com.looseboxes.spring.ratelimiter.annotation.RateLimitProcessor;
 
 import java.io.Serializable;
 
-public final class CountWithinDuration implements Rate, Serializable {
+public final class LimitWithinDuration implements Rate, Serializable {
 
-    public static final CountWithinDuration NONE = new CountWithinDuration(0, 0);
+    public static final LimitWithinDuration NONE = new LimitWithinDuration(0, 0);
 
-    private final int count;
+    private final int limit;
     private final long duration;
     private final long timeCreated;
 
-    public CountWithinDuration() {
+    public LimitWithinDuration() {
         this(1, 0);
     }
 
-    public CountWithinDuration(int count, long duration) {
-        final String limitError = RateLimitProcessor.getErrorMessageIfInvalidLimit(count, null);
+    public LimitWithinDuration(int limit, long duration) {
+        final String limitError = RateLimitProcessor.getErrorMessageIfInvalidLimit(limit, null);
         if(limitError != null) {
             throw new IllegalArgumentException(limitError);
         }
@@ -25,18 +25,16 @@ public final class CountWithinDuration implements Rate, Serializable {
         if(periodError != null) {
             throw new IllegalArgumentException(periodError);
         }
-        this.count = count;
+        this.limit = limit;
         this.duration = duration;
         this.timeCreated = System.currentTimeMillis();
     }
 
     @Override
     public int compareTo(Rate other) {
-        CountWithinDuration countWithinDuration = (CountWithinDuration) other;
-        final int nextCount = incrementCount();
-        final long nextDuration = incrementDuration();
-        if(nextCount > countWithinDuration.count) {
-            if(nextDuration > countWithinDuration.duration) {
+        LimitWithinDuration limitWithinDuration = (LimitWithinDuration) other;
+        if(limit > limitWithinDuration.limit) {
+            if(duration > limitWithinDuration.duration) {
                 return 0;
             }else{
                 return -1;
@@ -48,19 +46,19 @@ public final class CountWithinDuration implements Rate, Serializable {
 
     @Override
     public Rate increment() {
-        return new CountWithinDuration(incrementCount(), incrementDuration());
+        return new LimitWithinDuration(incrementCount(), incrementDuration());
     }
 
     private int incrementCount() {
-        return count + 1;
+        return limit + 1;
     }
 
     private long incrementDuration() {
         return duration + (System.currentTimeMillis() - timeCreated);
     }
 
-    public int getCount() {
-        return count;
+    public int getLimit() {
+        return limit;
     }
 
     public long getDuration() {
@@ -73,8 +71,8 @@ public final class CountWithinDuration implements Rate, Serializable {
 
     @Override
     public String toString() {
-        return "CountWithinDuration{" +
-                "count=" + count +
+        return "LimitWithinDuration{" +
+                "limit=" + limit +
                 ", duration=" + duration +
                 ", timeCreated=" + timeCreated +
                 '}';
