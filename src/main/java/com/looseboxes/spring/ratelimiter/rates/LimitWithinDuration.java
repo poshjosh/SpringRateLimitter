@@ -3,6 +3,7 @@ package com.looseboxes.spring.ratelimiter.rates;
 import com.looseboxes.spring.ratelimiter.annotation.RateLimitProcessor;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public final class LimitWithinDuration implements Rate, Serializable {
 
@@ -67,6 +68,19 @@ public final class LimitWithinDuration implements Rate, Serializable {
 
     public long getTimeCreated() {
         return timeCreated;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LimitWithinDuration that = (LimitWithinDuration) o;
+        return limit == that.limit && duration == that.duration;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(limit, duration);
     }
 
     @Override

@@ -32,17 +32,29 @@ public class RateLimiterSingleton<K> implements RateLimiter<K> {
         if(this.key.equals(key)) {
             rate = rate == null ? Objects.requireNonNull(rateSupplier.getInitialRate()) : rate.increment();
             final int n = rate.compareTo(limit);
+            boolean limitExceeded = false;
             if(n < 0) {
-                rateExceededHandler.onRateExceeded(key, rate, limit);
+                limitExceeded = true;
             }else if(n == 0) {
-                rate = Objects.requireNonNull(rateSupplier.getResetRate());
+                final Rate reset = Objects.requireNonNull(rateSupplier.getResetRate());
             }
 
             if(LOG.isDebugEnabled()) {
                 LOG.debug("\nFor: {}, rate: {} exceeds: {}, limit: {}", key, rate, n < 0, limit);
             }
 
-            return rate;
+            final Rate result = rate;
+
+            if(Rate.NONE.equals(rate)) {
+                rate = null;
+            }
+
+            if(limitExceeded) {
+                rateExceededHandler.onRateExceeded(key, result, limit);
+            }
+
+            return result;
+
         }else{
             throw new IllegalArgumentException(String.format("Expected: %s, found: %s", this.key, key));
         }
