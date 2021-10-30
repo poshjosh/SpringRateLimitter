@@ -16,20 +16,24 @@ public class RateLimiterSingleton<K> implements RateLimiter<K> {
     private final Rate limit;
     private Rate rate;
 
+    public RateLimiterSingleton(RateSupplier rateSupplier, Rate limit) {
+        this(rateSupplier, new RateExceededExceptionThrower<>(), null, limit);
+    }
+
     public RateLimiterSingleton(RateSupplier rateSupplier,
                                 RateExceededHandler<K> rateExceededHandler,
                                 K key,
                                 Rate limit) {
-        this.rateSupplier = rateSupplier;
-        this.rateExceededHandler = rateExceededHandler;
+        this.rateSupplier = Objects.requireNonNull(rateSupplier);
+        this.rateExceededHandler = Objects.requireNonNull(rateExceededHandler);
         this.key = key;
-        this.limit = limit;
+        this.limit = Objects.requireNonNull(limit);
     }
 
     @Override
     public Rate record(K key) throws RateLimitExceededException {
 
-        if(this.key.equals(key)) {
+        if(this.key == null || this.key.equals(key)) {
 
             final Rate next = rate == null ? getInitialRate() : rate.increment();
 
