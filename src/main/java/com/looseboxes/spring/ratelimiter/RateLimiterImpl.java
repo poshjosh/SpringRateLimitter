@@ -72,7 +72,9 @@ public class RateLimiterImpl<K> implements RateLimiter<K> {
         if(reset) {
             cache.remove(key);
         }else{
-            cache.put(key, next);
+            if(existingRate != next) {
+                cache.put(key, next);
+            }
         }
 
         if(firstExceededLimit != null) {
