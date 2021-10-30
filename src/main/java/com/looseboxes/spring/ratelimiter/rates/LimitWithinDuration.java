@@ -45,10 +45,10 @@ public final class LimitWithinDuration implements Rate, Serializable {
 
     @Override
     public Rate increment() {
-        return new LimitWithinDuration(incrementCount(), incrementDuration());
+        return new LimitWithinDuration(incrementLimit(), incrementDuration());
     }
 
-    private int incrementCount() {
+    private int incrementLimit() {
         return limit + 1;
     }
 
