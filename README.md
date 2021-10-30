@@ -4,7 +4,7 @@ Light weight rate limiting library for spring rest controllers.
 
 With rate limting, you can block your endpoints after some requests for specified period of time
 
-# Usage
+### Usage
 
 __1. Annotate your spring application class as shown:__
 
@@ -21,29 +21,11 @@ public class MySpringApplication{
 }
 ```
 
-__2. Add some required properties__
-
-```yaml
-rate-limiter:
-  disabled: false
-  # If using annotations, you have to specify one package where all the controllers should be scanned for
-  controller-package: com.myapplicatioon.web.rest
-  rate-limits:
-    per-second:
-      count: 90
-      duration: 1
-      time-unit: SECONDS
-    per-minute:
-      count: 300
-      duration: 1
-      time-unit: MINUTES
-```
-
-__3. Add an exception handler for RateLimitException.__ 
+__2. Add an exception handler for RateLimitException.__ 
 
 [Exception handling for rest with Spring](https://www.baeldung.com/exception-handling-for-rest-with-spring)
 
-__4. Annotate controller or separate methods.__
+__3. Annotate controller or separate methods.__
 
 ```java
 import com.looseboxes.spring.ratelimiter.annotation.RateLimit;
@@ -74,9 +56,29 @@ public class MyResource {
 }
 ```
 
-# Manual usage
+### Direct usage
 
-You can use a `RateLimiter` manually as shown:
+You can use a `RateLimiter` directly.
+
+__1. Add some properties__
+
+```yaml
+rate-limiter:
+  disabled: false
+  # If using annotations, you have to specify one package where all the controllers should be scanned for
+  controller-package: com.myapplicatioon.web.rest
+  rate-limits:
+    per-second:
+      count: 90
+      duration: 1
+      time-unit: SECONDS
+    per-minute:
+      count: 300
+      duration: 1
+      time-unit: MINUTES
+```
+
+__2. Create and use the RateLimiter manually__
 
 ```java
 import javax.servlet.http.HttpServletRequest;
