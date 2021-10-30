@@ -11,7 +11,9 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
-class RateLimiterTest {
+public class RateLimiterTest {
+
+    private final int durationMillis = 1_500;
 
     private RateLimiter instance;
 
@@ -21,31 +23,37 @@ class RateLimiterTest {
     }
 
     @Test
-    void updateRate_firstRateShouldEqualBaseRate() {
-        Rate result = instance.record("1");
+    void firstRateShouldEqualBaseRate() {
+        final String key = getKey(0);
+        Rate result = instance.record(key);
         assertThat(result).isEqualTo(getBaseRate());
     }
 
     @Test
-    void updateRate_firstRateShouldBeLessThanHigherRate() {
-        final String key = "1";
+    void firstRateShouldBeLessThanHigherRate() {
+        final String key = getKey(0);
         instance.record(key);
         assertThatThrownBy(() -> instance.record(key));
     }
 
     @Test
-    void updateRate_shouldResetWhenAtThreshold() {
+    void shouldResetWhenAtThreshold() throws Exception{
         instance = getRateLimiter(getLimitsThatWillLeadToReset());
-        final String key = "1";
+        final String key = getKey(0);
         Rate result = instance.record(key);
+
+        // Simulate some time before the next recording
+        // This way we can have a reset
+        Thread.sleep(durationMillis + 500);
+
         result = instance.record(key);
-        assertThat(result).isEqualTo(getBaseRate());
+        assertThat(result).isEqualTo(Rate.NONE);
     }
 
     @Test
-    void updateRate_shouldFailWhenLimitExceeded() {
+    void shouldFailWhenLimitExceeded() {
         instance = getRateLimiter(getLimitsThatWillLeadToException());
-        final String key = "1";
+        final String key = getKey(0);
         Rate result = instance.record(key);
         assertThatThrownBy(() -> instance.record(key));
     }
@@ -54,27 +62,29 @@ class RateLimiterTest {
         return new RateLimiterImpl(getBaseRateSupplier(), limits);
     }
 
-    private List<Rate> getDefaultLimits() { return Arrays.asList(getDefaultLimit()); }
+    protected String getKey(int index) {
+        return Integer.toString(index + 1);
+    }
 
-    private List<Rate> getLimitsThatWillLeadToException() {
+    protected List<Rate> getDefaultLimits() { return Arrays.asList(getDefaultLimit()); }
+
+    protected List<Rate> getLimitsThatWillLeadToException() {
         return Arrays.asList(getBaseRate(), getDefaultLimit());
     }
 
-    private Rate getDefaultLimit() {
-        return new LimitWithinDuration(1, 3000);
+    protected Rate getDefaultLimit() {
+        return new LimitWithinDuration(1, durationMillis);
     }
 
-    private List<Rate> getLimitsThatWillLeadToReset() {
+    protected List<Rate> getLimitsThatWillLeadToReset() {
         return Arrays.asList(getBaseRate(), getBaseRate());
     }
 
-    private RateSupplier getBaseRateSupplier() {
+    protected RateSupplier getBaseRateSupplier() {
         return () -> getBaseRate();
     }
 
-    private final LimitWithinDuration baseRate = new LimitWithinDuration();
-
     private Rate getBaseRate() {
-        return baseRate;
+        return new LimitWithinDuration();
     }
 }

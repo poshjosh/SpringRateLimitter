@@ -19,6 +19,7 @@
     <description>A light weight rate limiter for Spring based rest controllers</description>
 
     <properties>
+        <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
         <spring-boot.version>2.2.5.RELEASE</spring-boot.version>
     </properties>
 
@@ -58,6 +59,14 @@
             <artifactId>spring-webmvc</artifactId>
         </dependency>
         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
@@ -79,6 +88,15 @@
                     <source>8</source>
                     <target>8</target>
                     <proc>none</proc>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
+                <configuration>
+                    <skipTests>false</skipTests>
+                    <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>
         </plugins>

@@ -30,33 +30,29 @@ public class RateLimiterSingleton<K> implements RateLimiter<K> {
     public Rate record(K key) throws RateLimitExceededException {
 
         if(this.key.equals(key)) {
-            rate = rate == null ? Objects.requireNonNull(rateSupplier.getInitialRate()) : rate.increment();
-            final int n = rate.compareTo(limit);
-            boolean limitExceeded = false;
-            if(n < 0) {
-                limitExceeded = true;
-            }else if(n == 0) {
-                final Rate reset = Objects.requireNonNull(rateSupplier.getResetRate());
-            }
+
+            final Rate next = rate == null ? getInitialRate() : rate.increment();
+
+            final int n = next.compareTo(limit);
 
             if(LOG.isDebugEnabled()) {
-                LOG.debug("\nFor: {}, rate: {} exceeds: {}, limit: {}", key, rate, n < 0, limit);
+                LOG.debug("\nFor: {}, rate: {} exceeds: {}, limit: {}", key, next, n > 0, limit);
             }
 
-            final Rate result = rate;
+            rate = n == 0 ? null : next;
 
-            if(Rate.NONE.equals(rate)) {
-                rate = null;
+            if(n > 0) {
+                rateExceededHandler.onRateExceeded(key, next, limit);
             }
 
-            if(limitExceeded) {
-                rateExceededHandler.onRateExceeded(key, result, limit);
-            }
-
-            return result;
+            return n == 0 ? Rate.NONE : next;
 
         }else{
             throw new IllegalArgumentException(String.format("Expected: %s, found: %s", this.key, key));
         }
+    }
+
+    private Rate getInitialRate() {
+        return Objects.requireNonNull(rateSupplier.getInitialRate());
     }
 }

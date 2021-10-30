@@ -40,16 +40,20 @@ public class RateLimiterImpl<K> implements RateLimiter<K> {
 
         Rate firstExceededLimit = null;
 
-        Rate rate = cache.get(key);
-        rate = rate == null ? Objects.requireNonNull(rateSupplier.getInitialRate()) : rate.increment();
+        final Rate existingRate = cache.get(key);
+
+        final Rate next = existingRate == null ? getInitialRate() : existingRate.increment();
+
+        boolean reset = false;
 
         if(!limits.isEmpty()) {
             int resetCount = 0;
             for(Rate limit : limits) {
-                final int n = rate.compareTo(limit);
+                final int n = next.compareTo(limit);
+                LOG.trace("Result: {}, for {} compareTo {}", n, next, limit);
                 if(n == 0) {
                     ++resetCount;
-                }else if(n < 0) {
+                }else if(n > 0) {
                     if(firstExceededLimit == null) {
                         firstExceededLimit = limit;
                         break;
@@ -57,24 +61,28 @@ public class RateLimiterImpl<K> implements RateLimiter<K> {
                 }
             }
             if(resetCount == limits.size()) {
-                rate = Objects.requireNonNull(rateSupplier.getResetRate());
+                reset = true;
             }
         }
 
         if(LOG.isDebugEnabled()) {
-            LOG.debug("\nFor: {}, rate: {} exceeds: {}, limit: {}", key, rate, firstExceededLimit != null, firstExceededLimit);
+            LOG.debug("\nFor: {}, rate: {} exceeds: {}, any limit: {}", key, next, firstExceededLimit != null, limits);
         }
 
-        if(rate == Rate.NONE) {
+        if(reset) {
             cache.remove(key);
         }else{
-            cache.put(key, rate);
+            cache.put(key, next);
         }
 
         if(firstExceededLimit != null) {
-            rateExceededHandler.onRateExceeded(key, rate, firstExceededLimit);
+            rateExceededHandler.onRateExceeded(key, next, firstExceededLimit);
         }
 
-        return rate;
+        return reset ? Rate.NONE : next;
+    }
+
+    private Rate getInitialRate() {
+        return Objects.requireNonNull(rateSupplier.getInitialRate());
     }
 }

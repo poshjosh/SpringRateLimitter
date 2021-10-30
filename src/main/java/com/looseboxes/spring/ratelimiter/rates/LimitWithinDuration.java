@@ -7,8 +7,6 @@ import java.util.Objects;
 
 public final class LimitWithinDuration implements Rate, Serializable {
 
-    public static final LimitWithinDuration NONE = new LimitWithinDuration(0, 0);
-
     private final int limit;
     private final long duration;
     private final long timeCreated;
@@ -38,10 +36,10 @@ public final class LimitWithinDuration implements Rate, Serializable {
             if(duration > limitWithinDuration.duration) {
                 return 0;
             }else{
-                return -1;
+                return 1;
             }
         }else{
-            return 1;
+            return -1;
         }
     }
 

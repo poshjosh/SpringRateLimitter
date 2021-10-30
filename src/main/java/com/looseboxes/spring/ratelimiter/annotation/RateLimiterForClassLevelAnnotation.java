@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
@@ -15,49 +17,19 @@ public class RateLimiterForClassLevelAnnotation implements RateLimiter<String> {
 
     private static final Logger LOG = LoggerFactory.getLogger(RateLimiterForClassLevelAnnotation.class);
 
-    private final ConcurrentMap<String, RateLimiter<String>> rateLimiters = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, RateLimiter<String>> rateLimiters;
 
-    private final RateSupplier rateSupplier;
-    private final RateExceededHandler<String> rateExceededHandler;
-
-    public RateLimiterForClassLevelAnnotation(String controllerPackageName,
-                                              RateSupplier rateSupplier,
-                                              RateExceededHandler<String> rateExceededHandler) {
-        this.rateSupplier = rateSupplier;
-        this.rateExceededHandler = rateExceededHandler;
-        this.init(controllerPackageName);
+    public RateLimiterForClassLevelAnnotation(Map<String, Rate> rates, RateSupplier rateSupplier) {
+        this(Util.createRateLimiters(rates, rateSupplier, new RateExceededExceptionThrower<>()));
     }
 
-    private void init(String controllerPackage) {
-        try {
-            List<Class<?>> controllerClasses = Util.getControllerClasses(controllerPackage);
-            for (Class<?> controllerClass : controllerClasses) {
-                initController(controllerClass);
-            }
-        } catch (ClassNotFoundException ex) {
-            throw new RuntimeException(ex);
-        }
-
-    }
-
-    private void initController(Class<?> controllerClass){
-        Util.getRequestMappingOptional(controllerClass)
-                .ifPresent(requestMapping -> {
-                    final RateLimit rateLimit = controllerClass.getAnnotation(RateLimit.class);
-                    if(rateLimit != null) {
-                        final Rate limit = new LimitWithinDuration(rateLimit.limit(), rateLimit.period());
-                        rateLimiters.put(requestMapping, newRateLimiter(requestMapping, limit));
-                    }
-                });
-    }
-
-    private RateLimiter<String> newRateLimiter(String key, Rate limit) {
-        return new RateLimiterSingleton<>(rateSupplier, rateExceededHandler, key, limit);
+    public RateLimiterForClassLevelAnnotation(Map<String, RateLimiter<String>> rateLimiters) {
+        this.rateLimiters = new ConcurrentHashMap<>(rateLimiters);
     }
 
     @Override
     public Rate record(String requestURI) throws RateLimitExceededException {
-        LOG.trace("Rate limiting: {}", requestURI);
+        LOG.trace("               Rate limiting: {}", requestURI);
         final String requestPath = getClassRequestPath(requestURI);
         final RateLimiter<String> rateLimiter = requestPath == null ? null : rateLimiters.get(requestPath);
         final Rate result = rateLimiter == null ? Rate.NONE : rateLimiter.record(requestPath);

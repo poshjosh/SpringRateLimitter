@@ -1,5 +1,10 @@
 package com.looseboxes.spring.ratelimiter.annotation;
 
+import com.looseboxes.spring.ratelimiter.RateExceededHandler;
+import com.looseboxes.spring.ratelimiter.RateLimiter;
+import com.looseboxes.spring.ratelimiter.RateLimiterSingleton;
+import com.looseboxes.spring.ratelimiter.RateSupplier;
+import com.looseboxes.spring.ratelimiter.rates.Rate;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -7,12 +12,27 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 class Util {
+
+    static Map<String, RateLimiter<String>> createRateLimiters(
+            Map<String, Rate> rates,
+            RateSupplier rateSupplier,
+            RateExceededHandler<String> rateExceededHandler) {
+        final Map<String, RateLimiter<String>> rateLimiters;
+        if(rates.isEmpty()) {
+            rateLimiters = Collections.emptyMap();
+        }else{
+            rateLimiters = new HashMap<>(rates.size(), 1.0f);
+            rates.forEach((path, rate) -> {
+                rateLimiters.put(path, new RateLimiterSingleton<>(
+                        rateSupplier, rateExceededHandler, path, rate
+                ));
+            });
+        }
+        return rateLimiters.isEmpty() ? Collections.emptyMap() : Collections.unmodifiableMap(rateLimiters);
+    }
 
     static List<Class<?>> getControllerClasses(String controllerPackage) throws ClassNotFoundException{
 

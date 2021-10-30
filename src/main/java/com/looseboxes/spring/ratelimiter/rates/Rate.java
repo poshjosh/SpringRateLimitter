@@ -11,6 +11,11 @@ public interface Rate extends Comparable<Rate> {
         public int compareTo(Rate other) {
             return 0;
         }
+
+        @Override
+        public String toString() {
+            return Rate.class.getName() + "$NONE";
+        }
     };
 
     Rate increment();
@@ -21,9 +26,9 @@ public interface Rate extends Comparable<Rate> {
      * <p><b>The return value represents the following:</b></p>
      *
      * <ul>
-     *     <li>POSITIVE_INTEGER = IS WITHIN LIMIT</li>
+     *     <li>POSITIVE_INTEGER = HAS EXCEEDED LIMIT</li>
      *     <li>ZERO = IS AT A THRESHOLD (Should be reset)</li>
-     *     <li>NEGATIVE_INTEGER = HAS EXCEEDED LIMIT</li>
+     *     <li>NEGATIVE_INTEGER = IS WITHIN LIMIT</li>
      * </ul>
      *
      * @param other
