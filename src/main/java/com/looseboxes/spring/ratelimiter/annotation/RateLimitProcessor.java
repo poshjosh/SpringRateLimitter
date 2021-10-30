@@ -1,7 +1,5 @@
 package com.looseboxes.spring.ratelimiter.annotation;
 
-
-
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
