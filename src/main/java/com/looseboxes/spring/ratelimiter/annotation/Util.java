@@ -27,7 +27,7 @@ class Util {
             rateLimiters = new HashMap<>(rates.size(), 1.0f);
             rates.forEach((path, rate) -> {
                 rateLimiters.put(path, new RateLimiterSingleton<>(
-                        rateSupplier, rateExceededHandler, path, rate
+                        path, rateSupplier, Collections.singletonList(rate), rateExceededHandler
                 ));
             });
         }

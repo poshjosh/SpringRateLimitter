@@ -11,7 +11,6 @@ public interface Rate extends Comparable<Rate> {
         public int compareTo(Rate other) {
             return 0;
         }
-
         @Override
         public String toString() {
             return Rate.class.getName() + "$NONE";
