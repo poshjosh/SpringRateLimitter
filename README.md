@@ -1,4 +1,4 @@
-## Spring rate limitter
+## Spring rate limiter
 
 Light weight rate limiting library for spring rest controllers.
 
@@ -21,11 +21,20 @@ public class MySpringApplication{
 }
 ```
 
-__2. Add an exception handler for RateLimitException.__ 
+__2. Add some required properties__
+
+```yaml
+rate-limiter:
+  disabled: false
+  # If using annotations, you have to specify one package where all the controllers should be scanned for
+  controller-package: com.myapplicatioon.web.rest
+```
+
+__3. Add an exception handler for RateLimitException.__ 
 
 [Exception handling for rest with Spring](https://www.baeldung.com/exception-handling-for-rest-with-spring)
 
-__3. Annotate controller or separate methods.__
+__4. Annotate controller or separate methods.__
 
 ```java
 import com.looseboxes.spring.ratelimiter.annotation.RateLimit;
@@ -58,15 +67,13 @@ public class MyResource {
 
 ### Direct usage
 
-You can use a `RateLimiter` directly.
+You could use a `RateLimiter` directly.
 
 __1. Add some properties__
 
 ```yaml
 rate-limiter:
   disabled: false
-  # If using annotations, you have to specify one package where all the controllers should be scanned for
-  controller-package: com.myapplicatioon.web.rest
   rate-limits:
     per-second:
       count: 90
