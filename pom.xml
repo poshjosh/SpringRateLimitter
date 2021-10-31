@@ -19,6 +19,8 @@
     <description>A light weight rate limiter for Spring based rest controllers</description>
 
     <properties>
+        <it.skip>true</it.skip>
+        <maven.failsafle.plugin.version>2.22.2</maven.failsafle.plugin.version>
         <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
         <spring-boot.version>2.2.5.RELEASE</spring-boot.version>
     </properties>
@@ -89,6 +91,22 @@
                     <target>8</target>
                     <proc>none</proc>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${maven.failsafle.plugin.version}</version>
+                <configuration>
+                    <skip>${it.skip}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

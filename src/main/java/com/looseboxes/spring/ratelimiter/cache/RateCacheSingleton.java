@@ -4,6 +4,12 @@ import com.looseboxes.spring.ratelimiter.rates.Rate;
 
 import java.util.function.BiConsumer;
 
+/**
+ * A cache to hold a single entry
+ *
+ * A {code null} key will match any/all keys.
+ * @param <K> The type of the key which this Cache holds
+ */
 public class RateCacheSingleton<K> implements RateCache<K>{
 
     private final K key;

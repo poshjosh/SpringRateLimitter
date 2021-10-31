@@ -10,10 +10,13 @@ public class RateLimiterIT {
 
     @Test
     public void testPerformance() {
-        testPerformance(10_000);
+        testPerformance(1_000, 100, 3_000_000);
+        testPerformance(10_000, 160, 3_000_000);
+        testPerformance(100_000, 160, 10_000_000);
+        testPerformance(1_000_000, 320, 60_000_000);
     }
 
-    private void testPerformance(int count) {
+    private void testPerformance(int count, long maxTime, long maxMemory) {
         final long tb4 = System.currentTimeMillis();
         final long mb4 = Util.availableMemory();
         RateLimiter rateLimiter = getRateLimiter(count + 1, 60_000);
